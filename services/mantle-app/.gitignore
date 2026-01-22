@@ -1,0 +1,32 @@
+node_modules
+
+# TanStack
+.tanstack
+.nitro
+.output
+.vite
+dist
+
+# tests
+coverage
+
+# editor
+.vscode
+.zed
+.rules
+
+# TLS/HTTPS
+certificates
+
+# environment
+*.env*
+
+# typescript
+tsconfig.tsbuildinfo
+
+# below are safe to commit
+!.env
+!.env.development
+!.env.production
+!.env.test
+!.env.local.template

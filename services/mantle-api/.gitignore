@@ -1,0 +1,11 @@
+node_modules
+build
+generated
+
+# environment
+*.env*
+!.env.local.template
+
+# editor
+.vscode
+.zed
