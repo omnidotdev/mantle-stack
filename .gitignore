@@ -1,3 +1,6 @@
 # Local files
 services.yaml
 .weaver-state.yaml
+!compose.yaml
+!compose.dev.yaml
+!.env.local.template
