@@ -1,5 +1,12 @@
-# Local files
-services.yaml
-.weaver-state.yaml
+# ignore all by default
+*
+
+!.gitignore
+!LICENSE.md
+!README.md
+!services.yaml.template
+!Tiltfile
 !compose.yaml
 !compose.dev.yaml
+!.env.local.template
+!renovate.json
