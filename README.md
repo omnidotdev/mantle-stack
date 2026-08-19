@@ -51,7 +51,7 @@ cd services/mantle-api && bun dev
 
 ## Documentation
 
-See [Mantle docs](https://docs.omni.dev/core/mantle) for full documentation.
+See [Mantle docs](https://docs.omni.dev/products/mantle) for full documentation.
 
 ## License
 
