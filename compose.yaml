@@ -21,7 +21,9 @@ services:
       retries: 5
 
   api:
-    image: api.manifold.omni.dev/omnidotdev/mantle-api:${MANTLE_VERSION:-latest}
+    # Pinned by digest so every install runs the same build; override with
+    # MANTLE_API_IMAGE to run another release
+    image: ${MANTLE_API_IMAGE:-api.manifold.omni.dev/omnidotdev/mantle-api:0.0.0@sha256:ef314e250efd1fb621ce5288c76ba433a411ac1e07dd2450c5542fbe0a3ac22e}
     restart: unless-stopped
     environment:
       NODE_ENV: production
@@ -44,7 +46,8 @@ services:
       - "${API_PORT:-4000}:4000"
 
   app:
-    image: api.manifold.omni.dev/omnidotdev/mantle-app:${MANTLE_VERSION:-latest}
+    # Pinned by digest; override with MANTLE_APP_IMAGE
+    image: ${MANTLE_APP_IMAGE:-api.manifold.omni.dev/omnidotdev/mantle-app:0.0.0@sha256:99cc748c91be9a68bbda436be6b5ef7e3f055d2e0b691fea4bb51e7ac9369bde}
     restart: unless-stopped
     environment:
       NODE_ENV: production
