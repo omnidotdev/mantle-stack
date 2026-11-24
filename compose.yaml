@@ -1,29 +1,42 @@
+# Self-host Mantle: Postgres, the API, and the web app, from prebuilt images.
+# Sign-in uses an OpenID Connect provider you already run (any standard
+# provider, or Omni Gatekeeper). Copy .env.local.template to .env.local, fill it
+# in, then run `docker compose --env-file .env.local up -d`
 services:
   db:
     image: postgres:18-alpine
+    restart: unless-stopped
     environment:
       POSTGRES_DB: ${DB_NAME:-mantle}
       POSTGRES_USER: ${DB_USER:-postgres}
       POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+    # Postgres 18 keeps its data in a versioned subdirectory, so the volume
+    # mounts at /var/lib/postgresql (mounting /var/lib/postgresql/data fails)
     volumes:
-      - db_data:/var/lib/postgresql/data
+      - db_data:/var/lib/postgresql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-mantle}"]
       interval: 5s
       timeout: 5s
       retries: 5
-    ports:
-      - "${DB_PORT:-5432}:5432"
 
   api:
-    image: manifold.omni.dev/omnidotdev/mantle-api:latest
+    image: api.manifold.omni.dev/omnidotdev/mantle-api:${MANTLE_VERSION:-latest}
+    restart: unless-stopped
     environment:
-      DATABASE_URL: postgres://${DB_USER:-postgres}:${DB_PASSWORD}@db:5432/${DB_NAME:-mantle}
-      AUTH_SECRET: ${AUTH_SECRET:?AUTH_SECRET is required}
-      PORT: "4000"
-      HOST: "0.0.0.0"
       NODE_ENV: production
-      CORS_ALLOWED_ORIGINS: http://localhost:3000
+      PORT: "4000"
+      DATABASE_URL: postgres://${DB_USER:-postgres}:${DB_PASSWORD}@db:5432/${DB_NAME:-mantle}
+      CORS_ALLOWED_ORIGINS: ${APP_URL:-http://localhost:3000}
+      # The provider's signing keys, used to verify the access tokens the app sends
+      AUTH_JWKS_URL: ${AUTH_JWKS_URL:?AUTH_JWKS_URL is required}
+      PERSONAL_WORKSPACE_FALLBACK: ${PERSONAL_WORKSPACE_FALLBACK:-true}
+    healthcheck:
+      test: ["CMD-SHELL", "bun -e \"fetch('http://127.0.0.1:4000/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     depends_on:
       db:
         condition: service_healthy
@@ -31,22 +44,31 @@ services:
       - "${API_PORT:-4000}:4000"
 
   app:
-    image: manifold.omni.dev/omnidotdev/mantle-app:latest
+    image: api.manifold.omni.dev/omnidotdev/mantle-app:${MANTLE_VERSION:-latest}
+    restart: unless-stopped
     environment:
       NODE_ENV: production
-      VITE_BASE_URL: http://localhost:3000
-      VITE_API_BASE_URL: http://api:4000
+      PORT: "3000"
+      VITE_BASE_URL: ${APP_URL:-http://localhost:3000}
+      VITE_API_URL: ${API_URL:-http://localhost:4000}
       AUTH_SECRET: ${AUTH_SECRET:?AUTH_SECRET is required}
-      # OAuth providers (optional)
-      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
-      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
-      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
-      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
-      OIDC_ISSUER: ${OIDC_ISSUER:-}
-      OIDC_CLIENT_ID: ${OIDC_CLIENT_ID:-}
-      OIDC_CLIENT_SECRET: ${OIDC_CLIENT_SECRET:-}
+      AUTH_BASE_URL: ${AUTH_BASE_URL:?AUTH_BASE_URL is required}
+      AUTH_CLIENT_ID: ${AUTH_CLIENT_ID:?AUTH_CLIENT_ID is required}
+      AUTH_CLIENT_SECRET: ${AUTH_CLIENT_SECRET:?AUTH_CLIENT_SECRET is required}
+      PERSONAL_WORKSPACE_FALLBACK: ${PERSONAL_WORKSPACE_FALLBACK:-true}
+    # Server-side rendering calls the API and the sign-in provider at their
+    # public URLs; this lets `localhost` URLs reach the host from the container
+    extra_hosts:
+      - "localhost:host-gateway"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO /dev/null http://127.0.0.1:3000/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     depends_on:
-      - api
+      api:
+        condition: service_healthy
     ports:
       - "${APP_PORT:-3000}:3000"
 
