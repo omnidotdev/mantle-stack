@@ -1,0 +1,44 @@
+# Mantle Workspace
+# Business operations suite: people, invoices, quotes and contracts, inventory
+#
+# Consumed by `weaver` CLI (https://github.com/omnidotdev/weaver-cli).
+# Declares the repositories that make up the Mantle workspace and pulls in the
+# platform metarepos it depends on (hidra for identity and authorization, aether
+# for billing, vortex for events) by referencing their own weaver.yaml files.
+# Not consumed by `omni/infra` (Pulumi) or Tilt
+
+sources:
+  # Platform metarepos - each has its own weaver.yaml
+  # Paths from sources are automatically rebased relative to source location
+  - path: ../hidra-stack/weaver.yaml
+    tags: [platform, hidra]
+
+  - path: ../aether-stack/weaver.yaml
+    tags: [platform, aether]
+
+  - path: ../vortex-stack/weaver.yaml
+    tags: [platform, vortex]
+
+workspace: .
+
+repositories:
+  # Mantle metarepo root
+  mantle-stack:
+    url: git@github.com:omnidotdev/mantle-stack.git
+    path: .
+    description: Business operations suite
+    tags: [product, metarepo]
+
+  # Mantle product services
+  mantle-api:
+    url: git@github.com:omnidotdev/mantle-api.git
+    path: ./services/mantle-api
+    description: Mantle GraphQL API (Elysia + PostGraphile)
+    tags: [product, backend]
+
+  mantle-app:
+    url: git@github.com:omnidotdev/mantle-app.git
+    path: ./services/mantle-app
+    description: Mantle web app (TanStack Start)
+    depends_on: [mantle-api]
+    tags: [product, frontend]

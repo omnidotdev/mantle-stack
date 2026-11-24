@@ -14,10 +14,15 @@ services:
   # Core platform services (HIDRA = umbrella IAM)
   - hidra:
       repo: https://github.com/omnidotdev/hidra-stack#master
-      path: ~/projects/omni/hidra-stack
+      path: ../hidra-stack
       metarepo: true
   - aether:
       repo: https://github.com/omnidotdev/aether-stack#master
+      path: ../aether-stack
+      metarepo: true
+  - vortex:
+      repo: https://github.com/omnidotdev/vortex-stack#master
+      path: ../vortex-stack
       metarepo: true
   # Product services
   - mantle-api:
