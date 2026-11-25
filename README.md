@@ -1,6 +1,6 @@
 # 🌋 Mantle
 
-Mantle is Omni's business operations suite: people, invoices, quotes and contracts, and inventory in one workspace. This metarepo orchestrates the Mantle services for local development and self-hosting.
+Mantle is Omni's business operations suite: people, quotes and contracts, invoices, and inventory. This metarepo orchestrates the Mantle services for local development and self-hosting.
 
 Product documentation lives at [docs.omni.dev](https://docs.omni.dev/products/mantle).
 
