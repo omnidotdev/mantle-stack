@@ -23,7 +23,7 @@ services:
   api:
     # Pinned by digest so every install runs the same build; override with
     # MANTLE_API_IMAGE to run another release
-    image: ${MANTLE_API_IMAGE:-api.manifold.omni.dev/omnidotdev/mantle-api:0.0.0@sha256:ef314e250efd1fb621ce5288c76ba433a411ac1e07dd2450c5542fbe0a3ac22e}
+    image: ${MANTLE_API_IMAGE:-api.manifold.omni.dev/omnidotdev/mantle-api:0.1.0@sha256:0b9188ab6823c587ccab198b234ca9e718c4df0d127d20610f0f1d429e494362}
     restart: unless-stopped
     environment:
       NODE_ENV: production
